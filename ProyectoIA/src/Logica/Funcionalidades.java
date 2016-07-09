@@ -83,7 +83,7 @@ public class Funcionalidades {
         return tableroEnteros;
     }
 
-    public ArrayList<ArrayList> conversor(Bloque[][] tableroEnteros) {
+    public ArrayList<ArrayList> conversorToArraylist(Bloque[][] tableroEnteros) {
         ArrayList<ArrayList> salida = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             ArrayList<Integer> columna = new ArrayList<>();
@@ -96,7 +96,17 @@ public class Funcionalidades {
         return salida;
 
     }
-
+    public Bloque[][] conversorToBloque( ArrayList<ArrayList>tableroEnteros) {
+        Bloque[][] salida = new Bloque[8][8];
+       
+        for (int i = 0; i < 8; i++) {
+            ArrayList<Integer> columna = new ArrayList<>();
+            for (int j = 0; j < 8; j++) {
+                salida[i][j].contenido = (int) tableroEnteros.get(i).get(j);
+            }
+        }
+        return salida;
+    }
     public void imprimir(ArrayList<ArrayList> salida) {
         System.out.println("Pintando Matriz");
         for (int i = 0; i < salida.size(); i++) {
