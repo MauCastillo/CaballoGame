@@ -96,7 +96,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
 
     }
 
-    private void noRepita(Coordenadas ubicacion) {
+    private void noRepita0(Coordenadas ubicacion) {
         //Esta funcion inavilita por dos turnos las casillas corridas por el caballo blanco la maquina
         if (!turnoHumano) {
 
@@ -110,6 +110,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
             }
             System.out.println("Graficos.UsuarioVisual.noRepita() Contador =" + contadornoRepita);
             contadornoRepita++;
+            
 
         } else {
             DeleteNoRepita();
@@ -148,8 +149,6 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
             cargarNorepite();
             funciones.imprimir(matrizDeJuego);
             matrizDeJuego = minimax.actualizarMatriz(matrizDeJuego, casillaActual, 0);
-            noRepita(casillaActual);
-            // DeleteNoRepita();
 
         }
         jLabelPuntosMaquina.setText(Integer.toString(puntosBlanco));
