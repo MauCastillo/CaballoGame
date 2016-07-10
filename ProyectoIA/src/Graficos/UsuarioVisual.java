@@ -11,11 +11,11 @@ import Logica.Coordenadas;
 import Logica.Funcionalidades;
 import java.awt.GridLayout;
 import Recursos.IcoRecurso;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import javax.swing.*;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -23,7 +23,7 @@ import javax.swing.JOptionPane;
  *
  * @author Mauro
  */
-public class UsuarioVisual extends javax.swing.JFrame implements ActionListener {
+public final class UsuarioVisual extends javax.swing.JFrame implements ActionListener {
 
     /**
      * Creates new form UsuarioVisual
@@ -33,18 +33,135 @@ public class UsuarioVisual extends javax.swing.JFrame implements ActionListener 
     public Bloque[][] matrixGrafico;
     Bloque init = new Bloque();
     Funcionalidades funciones;
+    int puntosBlanco;
+    int puntosNegro;
+    boolean turnoHumano = false;
+    boolean termino = false;
+    ArrayList<ArrayList> matrizDeJuego = new ArrayList<>();
+    Amplitud minimax;
 
     public UsuarioVisual() {
         initComponents();
         //Funcines para el Inicio del Mapa
         funciones = new Funcionalidades();
         matrix = funciones.crearTablero();
+        matrizDeJuego = (ArrayList<ArrayList>) funciones.conversorToArraylist(matrix).clone();
         this.objetivos = new ArrayList<>();
         creacionBotones(matrix);
         this.repaint();
         this.setSize(580, 620);
         this.setResizable(false);
 
+    }
+    //Método que verifica si el juego termino
+
+    private void terminoJuego() {
+        if ((puntosBlanco + puntosNegro) >= 35) {
+            termino = true;
+        }
+    }
+//Pinta los campos disponibles para mover el usuario
+
+    private void pintarcuadro(Coordenadas ubicacion) {
+        matrix[ubicacion.x][ubicacion.y].setColor(true);
+    }
+
+    private void resaltarPosiblesMovimientos() {
+        ArrayList<Bloque> posiblesMovimientos = new ArrayList<>();
+        posiblesMovimientos = minimax.calcularPosiblesMovimientos(matrizDeJuego, "Negro");
+        for (int i = 0; i < posiblesMovimientos.size(); i++) {
+            Coordenadas coordenada = new Coordenadas();
+            coordenada = posiblesMovimientos.get(i).ubicacion;
+            pintarcuadro(coordenada);
+        }
+        creacionBotones(matrix);
+    }
+
+    //Método que mueve un caballo en la dirección dada
+    public void moverEnL(String colorCaballo, Bloque nuevaJugada) {
+        int codigoCaballo = 1; //Si es Caballo Blanco
+        if (colorCaballo.equals("Negro")) {
+            codigoCaballo = 2;
+        }
+
+        Coordenadas casillaActual = minimax.encontrarUbicacionCaballo(matrizDeJuego, colorCaballo);
+
+        //colorearCasilla(casillaActual, 0);
+        //colorearCasilla(nuevaJugada.ubicacion, codigoCaballo);
+        puntosBlanco += nuevaJugada.getPuntosCaballoBlanco();
+        puntosNegro += nuevaJugada.getPuntosCaballoNegro();
+        matrizDeJuego = nuevaJugada.estado;
+
+        if (colorCaballo.equals("Blanco")) {
+            matrizDeJuego = minimax.actualizarMatriz(matrizDeJuego, casillaActual, 0);
+        }
+
+        jLabelPuntosMaquina.setText(Integer.toString(puntosBlanco));
+        jLabelPuntosHumano.setText(Integer.toString(puntosNegro));
+
+        System.out.println("Movi caballo " + colorCaballo + " en la dirección " + nuevaJugada.movimiento);
+
+        // System.out.println(" MATRIZ NUMERICA "+matrizDeJuego.get(4).get(3));
+        matrix = funciones.conversorToBloque((ArrayList<ArrayList>) matrizDeJuego.clone());
+        creacionBotones(matrix);
+    }
+
+    private void jugada() {
+        int contadorDeJugadas = 0;
+
+        while (contadorDeJugadas < 2) {
+            if ((contadorDeJugadas % 2) == 0) //Si el contador de jugadas es par, es el turno del caballo blanco
+            {
+                if (termino) {
+                    if (puntosBlanco < puntosNegro) {
+                        JOptionPane.showMessageDialog(this, "Ganador", "Termino El juego", 1,IcoRecurso.ICON_WiNNER);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Perdiste", "Termino el Juego", 0,IcoRecurso.ICON_LIKE);
+                    }
+                    break;
+                }
+
+                turnoHumano = false;
+
+                Bloque nodoRaiz = new Bloque();
+
+                nodoRaiz.setEstado(matrizDeJuego);
+                nodoRaiz.setTipo("MAX");
+                nodoRaiz.setUtilidad(0);
+                nodoRaiz.setPadre(-1);
+
+                Bloque unNodo = minimax.calcularDecisionMinimax(nodoRaiz);
+
+                System.out.println("Movimiento: " + unNodo.movimiento);
+                System.out.println("Ganancia Movimiento: " + unNodo.puntosMovimiento);
+                System.out.println("puntos maquina: " + unNodo.getPuntosCaballoBlanco());
+                System.out.println("puntos jugador: " + unNodo.getPuntosCaballoNegro());
+                System.out.println("Utilidad: " + unNodo.utilidad);
+                System.out.println("Ubicación: " + unNodo.ubicacion);
+                System.out.println("********************");
+
+                moverEnL("Blanco", unNodo);
+            } else //Si el contador de jugadas es impar, es el turno del caballo dorado
+            {
+                if (termino) {
+                    System.out.println("Termine desde JugarPartida - Else");
+
+                    if (puntosBlanco < puntosNegro) {
+                        JOptionPane.showConfirmDialog(this, "Ganador", "Termino El juego", 1);
+                    } else {
+                        JOptionPane.showConfirmDialog(this, "Perdiste", "Termino el Juego", 0);
+                    }
+
+                    break;
+                }
+
+                turnoHumano = true;
+                resaltarPosiblesMovimientos();
+            }
+
+            contadorDeJugadas++;
+            terminoJuego();
+        }
     }
 
     //Diseñada para generar los iconos
@@ -55,11 +172,11 @@ public class UsuarioVisual extends javax.swing.JFrame implements ActionListener 
             //VACIO
             imagen = IcoRecurso.ICON_VACIO;
         }
-        if (bloque.getContenido() == 1) {
+        if (bloque.getContenido() == 2) {
             //CABALLO NEGRO
             imagen = IcoRecurso.ICON_CABALLO_NEGRO;
         }
-        if (bloque.getContenido() == 2) {
+        if (bloque.getContenido() == 1) {
             //CABALLO BLANCO
             imagen = IcoRecurso.ICON_CABALLO_BLANCO;
         }
@@ -85,18 +202,22 @@ public class UsuarioVisual extends javax.swing.JFrame implements ActionListener 
         jPmapa.setLayout(new GridLayout(8, 8));
 
         //*AQUI CREO LOS BOTONES CON TAMAÑO 8 -- A que se refieren con tamaño 8?
+        Boton[][] MatFichas = new Boton[8][8];
         for (int PosY = 0; PosY < 8; PosY++) {
             for (int PosX = 0; PosX < 8; PosX++) {
-                Boton[][] MatFichas = new Boton[8][8];
                 MatFichas[PosX][PosY] = new Boton();
                 /*Agrego Coordenadas*/
                 Coordenadas ubicacion = new Coordenadas(PosX, PosY);
                 MatFichas[PosX][PosY].setCordenada(ubicacion);
+                MatFichas[PosX][PosY].setBackground(Color.white);
                 /*Fin de insertcion de coordenadas*/
                 //Escucha del Boton
                 MatFichas[PosX][PosY].addActionListener(this);
                 //Icono del Boton
-                MatFichas[PosX][PosY].setIcon(IconoMapa(matrix[PosY][PosX]));
+                MatFichas[PosX][PosY].setIcon(IconoMapa(matrix[PosX][PosY]));
+                if (matrix[PosX][PosY].isColor()) {
+                    MatFichas[PosX][PosY].setBackground(Color.ORANGE);
+                }
                 jPmapa.add(MatFichas[PosX][PosY]);
 
             }
@@ -163,12 +284,12 @@ public class UsuarioVisual extends javax.swing.JFrame implements ActionListener 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 100, Short.MAX_VALUE)
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 100, Short.MAX_VALUE)
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -193,117 +314,124 @@ public class UsuarioVisual extends javax.swing.JFrame implements ActionListener 
         javax.swing.GroupLayout jPmapaLayout = new javax.swing.GroupLayout(jPmapa);
         jPmapa.setLayout(jPmapaLayout);
         jPmapaLayout.setHorizontalGroup(
-                jPmapaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 0, Short.MAX_VALUE)
+            jPmapaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 433, Short.MAX_VALUE)
         );
         jPmapaLayout.setVerticalGroup(
-                jPmapaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, 337, Short.MAX_VALUE)
+            jPmapaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 275, Short.MAX_VALUE)
         );
 
-        jLTitle.setFont(new java.awt.Font("Candara", 1, 24)); // NOI18N
-        jLTitle.setForeground(new java.awt.Color(0, 0, 153));
+        jLTitle.setFont(new java.awt.Font("Chiller", 1, 48)); // NOI18N
+        jLTitle.setForeground(new java.awt.Color(255, 102, 153));
         jLTitle.setText("Hungry horses 1.0");
 
         javax.swing.GroupLayout jPBannerLayout = new javax.swing.GroupLayout(jPBanner);
         jPBanner.setLayout(jPBannerLayout);
         jPBannerLayout.setHorizontalGroup(
-                jPBannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPBannerLayout.createSequentialGroup()
-                        .addGap(119, 119, 119)
-                        .addComponent(jLTitle)
-                        .addContainerGap(326, Short.MAX_VALUE))
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPBannerLayout.createSequentialGroup()
+            jPBannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPBannerLayout.createSequentialGroup()
+                .addGroup(jPBannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPBannerLayout.createSequentialGroup()
+                        .addGap(89, 89, 89)
+                        .addComponent(jLTitle))
+                    .addGroup(jPBannerLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jPmapa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .addComponent(jPmapa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(63, Short.MAX_VALUE))
         );
         jPBannerLayout.setVerticalGroup(
-                jPBannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPBannerLayout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addComponent(jLTitle)
-                        .addGap(17, 17, 17)
-                        .addComponent(jPmapa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
+            jPBannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPBannerLayout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addComponent(jLTitle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPmapa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(25, 25, 25))
         );
 
-        jComboBoxDificultad.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Principiante", "Amateur", "Experto"}));
+        jComboBoxDificultad.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jComboBoxDificultad.setForeground(new java.awt.Color(255, 51, 255));
+        jComboBoxDificultad.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Principiante", "Amateur", "Experto" }));
 
+        jLabelDificultad.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabelDificultad.setText("Seleccione un nivel de dificultad:");
 
+        jLabelMaquina.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabelMaquina.setForeground(new java.awt.Color(102, 102, 255));
         jLabelMaquina.setText("Máquina:");
 
+        jLabelHumano.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabelHumano.setForeground(new java.awt.Color(255, 51, 51));
         jLabelHumano.setText("Humano:");
 
+        jLabelPuntosMaquina.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabelPuntosMaquina.setForeground(new java.awt.Color(51, 51, 255));
         jLabelPuntosMaquina.setText("0");
 
+        jLabelPuntosHumano.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabelPuntosHumano.setForeground(new java.awt.Color(255, 51, 51));
         jLabelPuntosHumano.setText("0");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabelMaquina)
                         .addGap(18, 18, 18)
+                        .addComponent(jLabelPuntosMaquina)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jBbuscar)
+                        .addGap(95, 95, 95))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(jLabelMaquina)
-                                                        .addGap(18, 18, 18)
-                                                        .addComponent(jLabelPuntosMaquina))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(jLabelHumano)
-                                                        .addGap(18, 18, 18)
-                                                        .addComponent(jLabelPuntosHumano)))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jBbuscar)
-                                        .addGap(25, 25, 25))
-                                .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addComponent(jPBanner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(jLabelDificultad)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                        .addComponent(jComboBoxDificultad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addGap(0, 0, Short.MAX_VALUE)))
-                                        .addContainerGap())))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabelHumano)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabelPuntosHumano))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabelDificultad)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jComboBoxDificultad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPBanner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPBanner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jComboBoxDificultad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabelDificultad))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jBbuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(jLabelMaquina)
-                                                .addComponent(jLabelPuntosMaquina))
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(jLabelHumano)
-                                                .addComponent(jLabelPuntosHumano))))
-                        .addGap(24, 24, 24))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPBanner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelDificultad)
+                    .addComponent(jComboBoxDificultad, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelMaquina)
+                    .addComponent(jLabelPuntosMaquina)
+                    .addComponent(jBbuscar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelHumano)
+                    .addComponent(jLabelPuntosHumano))
+                .addGap(24, 24, 24))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBbuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBbuscarActionPerformed
-
-        System.out.println("Tamaño matrix " + matrix[0].length);
-        Amplitud amplitud = new Amplitud((String) jComboBoxDificultad.getSelectedItem());
-        ArrayList<Bloque> s = new ArrayList<>();
-        s = amplitud.minimax(init);
-
-        //Como creo el tablero con un arraylist anidado?
+        jBbuscar.setEnabled(false);
+        JOptionPane.showMessageDialog(this, "No tiene sentido que lo intentes igual perderas", "Que empiece el Juego", 0);
+        minimax = new Amplitud((String) jComboBoxDificultad.getSelectedItem());
+        jugada();
     }//GEN-LAST:event_jBbuscarActionPerformed
 
     /**
@@ -356,27 +484,85 @@ public class UsuarioVisual extends javax.swing.JFrame implements ActionListener 
     // End of variables declaration//GEN-END:variables
 
     private Coordenadas convertidorACoordenadas(String entrada) {
-        
+
         int principio = entrada.indexOf("Boton[,");
         principio += 7;
-        int fin = entrada.indexOf(",65x43");
-        String procesado = entrada.substring(principio, fin);   
+        int fin = entrada.indexOf(",64x41");
+        String procesado = entrada.substring(principio, fin);
         //Convierto el string en tokens
         StringTokenizer st = new StringTokenizer(procesado, ",");
-        String parametroX  = st.nextToken();
-        String parametroY= st.nextToken();
+        String parametroX = st.nextToken();
+        String parametroY = st.nextToken();
         int X = Integer.parseInt(parametroX);
         int Y = Integer.parseInt(parametroY);
-        X = X/65;
-        Y = Y/43;
-        System.out.println(" -+-+- Coordenadas  inicio: " + procesado + " X = "+ X + " Y = " + Y);
-        Coordenadas salida = new Coordenadas(X,Y);
+        X = X / 64;
+        Y = Y / 41;
+        System.out.println(" -+-+- Coordenadas  inicio: " + procesado + " X = " + X + " Y = " + Y);
+        Coordenadas salida = new Coordenadas(X, Y);
+        return salida;
+    }
+
+    private boolean BloqueAdmitido(Coordenadas ubicacion) {
+        /*Esta funcion verifica la disponibilidad de movimiento*/
+        boolean salida = false;
+        salida = matrix[ubicacion.x][ubicacion.y].isColor();
+
         return salida;
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
         System.out.println("Graficos.UsuarioVisual.actionPerformed()" + ae.getSource());
-        convertidorACoordenadas(ae.getSource().toString());
+        Coordenadas ubicacion = convertidorACoordenadas(ae.getSource().toString());
+
+        if (turnoHumano) {
+            if (BloqueAdmitido(ubicacion)) {
+                //CREAMOS EL NODO que representa la jugada que escogio el usuario
+                Bloque nuevaJugada = new Bloque();
+                nuevaJugada.setUbicacion(ubicacion);
+
+                //Definimos los nuevos puntos de cada caballo
+                int valorCasilla = minimax.encontrarValorCasilla(matrizDeJuego, ubicacion);
+                switch (valorCasilla) {
+                    case 3:   //Si la casilla es un cesped
+                        nuevaJugada.setPuntosCaballoDorado(1);
+                        break;
+                    case 4:   //Si la casilla es una flor
+                        nuevaJugada.setPuntosCaballoDorado(3);
+                        break;
+                    case 0:   //Si la casilla está vacía
+                        nuevaJugada.setPuntosCaballoDorado(0);
+                        break;
+                }
+
+                //Definimos el nuevo estado para ese nodo
+                Coordenadas casillaAnterior = minimax.encontrarUbicacionCaballo(matrizDeJuego, "Negro");
+                ArrayList<ArrayList> nuevoEstado = matrizDeJuego;
+                nuevoEstado = minimax.actualizarMatriz(nuevoEstado, casillaAnterior, 0);
+                nuevoEstado = minimax.actualizarMatriz(nuevoEstado, ubicacion, 2);
+                nuevaJugada.setEstado(nuevoEstado);
+
+                //Realizamos el movimiento que el usuario selecciono
+                moverEnL("Negro", nuevaJugada);
+                // quitarResaltado();
+
+                //Si el juego no se ha terminado, vuelve a jugar el caballo blanco
+                if (termino == false) {
+                    //System.out.println("No debe terminar");
+                    jugada();
+                }
+
+            } else //Si el usuario selecciona una casilla a la cual no se pueda mover
+            {
+                JOptionPane.showMessageDialog(null, "Lo siento, pero no puede moverse a esta casilla", "Error", 0,IcoRecurso.ICON_ERROR);
+            }
+        } else // Si no es el turno del jugador
+         if (termino) {
+                JOptionPane.showMessageDialog(null, "El juego ya terminó", "Error", 0,IcoRecurso.ICON_ERROR);
+            } else {
+                JOptionPane.showMessageDialog(null, "El juego aún no ha empezado", "Error", 0,IcoRecurso.ICON_ERROR);
+            }
+
     }
+
 }

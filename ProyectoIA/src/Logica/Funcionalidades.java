@@ -6,6 +6,7 @@
 package Logica;
 
 import java.util.ArrayList;
+import javafx.scene.effect.Blend;
 
 /**
  *
@@ -100,9 +101,11 @@ public class Funcionalidades {
         Bloque[][] salida = new Bloque[8][8];
        
         for (int i = 0; i < 8; i++) {
-            ArrayList<Integer> columna = new ArrayList<>();
             for (int j = 0; j < 8; j++) {
-                salida[i][j].contenido = (int) tableroEnteros.get(i).get(j);
+                System.out.println("++++++++++++++++++++ "+ tableroEnteros.get(i).get(j) );
+                Bloque nodo = new Bloque();
+                nodo.setContenido((int) tableroEnteros.get(i).get(j));
+                salida[i][j] = nodo ;
             }
         }
         return salida;

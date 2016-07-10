@@ -23,6 +23,10 @@ public class Boton extends JButton{
     public void setCordenada(Coordenadas cordenada) {
         this.cordenada = cordenada;
     }
+
+    void setBackground(int i, int i0, int i1) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
     
     

@@ -367,7 +367,7 @@ public Amplitud(String nivel)
     
     
     //Método que calcula que movimientos puede realizar un caballo según un estado del tablero
-    ArrayList<Bloque> calcularPosiblesMovimientos(ArrayList<ArrayList> estado, String colorCaballo)
+    public ArrayList<Bloque> calcularPosiblesMovimientos(ArrayList<ArrayList> estado, String colorCaballo)
     {
         ArrayList<Bloque> posiblesMovimientos = new ArrayList<>();
         
@@ -470,10 +470,55 @@ public Amplitud(String nivel)
         return valor;
         
     }
+
+    public String getNivel() {
+        return nivel;
+    }
+
+    public void setNivel(String nivel) {
+        this.nivel = nivel;
+    }
+
+    public int getProfundidadLimite() {
+        return profundidadLimite;
+    }
+
+    public void setProfundidadLimite(int profundidadLimite) {
+        this.profundidadLimite = profundidadLimite;
+    }
+
+    public boolean isTermino() {
+        return termino;
+    }
+
+    public void setTermino(boolean termino) {
+        this.termino = termino;
+    }
+
+    public ArrayList<String> getListadoMovimientos() {
+        return listadoMovimientos;
+    }
+
+    public void setListadoMovimientos(ArrayList<String> listadoMovimientos) {
+        this.listadoMovimientos = listadoMovimientos;
+    }
+
+    public Coordenadas getSiguienteUbicacionMaquina() {
+        return siguienteUbicacionMaquina;
+    }
+
+    public void setSiguienteUbicacionMaquina(Coordenadas siguienteUbicacionMaquina) {
+        this.siguienteUbicacionMaquina = siguienteUbicacionMaquina;
+    }
+
+    public ArrayList<Bloque> getArbolMinimax() {
+        return arbolMinimax;
+    }
+
+    public void setArbolMinimax(ArrayList<Bloque> arbolMinimax) {
+        this.arbolMinimax = arbolMinimax;
+    }
     
-    
-    
-    
-    // ° ° ° ° ° ° ° ° ° ° ° ° °SETTERS & GETTERS ° ° ° ° ° ° ° ° ° ° ° ° °
+   
     
 }

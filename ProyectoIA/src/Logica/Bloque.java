@@ -14,6 +14,7 @@ import java.util.ArrayList;
 public class Bloque {
 
     public int contenido;
+    public boolean color = false; 
     public ArrayList<ArrayList> estado;   //Representa la matriz del juego para ese nodo
     public Coordenadas ubicacion;               //Indica en que punto de la matriz estado se encuentra el caballo
     public String tipo;                   //Puede ser MIN o MAX
@@ -100,5 +101,14 @@ public class Bloque {
     public Coordenadas getUbicacion() {
         return ubicacion;
     }
+
+    public boolean isColor() {
+        return color;
+    }
+
+    public void setColor(boolean color) {
+        this.color = color;
+    }
+    
 
 }

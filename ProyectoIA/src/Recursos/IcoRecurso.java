@@ -20,7 +20,13 @@ public class IcoRecurso {
     public static final ImageIcon ICON_CABALLO_NEGRO = getIcon("caballo_negro.png");
     public static final ImageIcon ICON_CESPED = getIcon("cesped.png");
     public static final ImageIcon ICON_FLOR = getIcon("flor.png");
-    
+    public static final ImageIcon ICON_CESPED_COLOR = getIcon("cesped_color.png");
+    public static final ImageIcon ICON_FLOR_COLOR = getIcon("flor_color.png");
+    public static final ImageIcon ICON_VACIO_COLOR = getIcon("blanco_color.png");
+    public static final ImageIcon ICON_ERROR = getIcon("error.png");
+    public static final ImageIcon ICON_LIKE= getIcon("like.png");
+    public static final ImageIcon ICON_WiNNER = getIcon("winner.png");
+
     private static ImageIcon getIcon(String path) {
         URL resource = IcoRecurso.class.getResource("icons/" + path);
         if (resource == null) {
