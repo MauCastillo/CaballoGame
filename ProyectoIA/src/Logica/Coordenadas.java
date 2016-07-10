@@ -15,6 +15,8 @@ public class Coordenadas {
     public int x;
     
     public Coordenadas() {
+        x = -1;
+        y = -1; 
     }
 
     public Coordenadas(int x, int y) {

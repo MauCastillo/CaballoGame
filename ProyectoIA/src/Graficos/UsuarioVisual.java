@@ -28,6 +28,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
     /**
      * Creates new form UsuarioVisual
      */
+    Coordenadas caballoSegundo = new Coordenadas();
     ArrayList<Bloque> objetivos;
     public Bloque[][] matrix;
     public Bloque[][] matrixGrafico;
@@ -98,25 +99,36 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
     private void noRepita(Coordenadas ubicacion) {
         //Esta funcion inavilita por dos turnos las casillas corridas por el caballo blanco la maquina
         if (!turnoHumano) {
-            if (contadornoRepita < 4) {
-                temporalUbicaciones.add(ubicacion);
-                for (int i = 0; i < temporalUbicaciones.size(); i++) {
-                    int prueba = (int) matrizDeJuego.get(temporalUbicaciones.get(i).x).get(temporalUbicaciones.get(i).y);
-                    if (prueba == 0) {
-                        matrizDeJuego = minimax.actualizarMatriz(matrizDeJuego, temporalUbicaciones.get(i), -9);
-                        funciones.imprimir(matrizDeJuego);
-                    }
 
-                }
-                System.out.println("Graficos.UsuarioVisual.noRepita() Contador ="+contadornoRepita);
-                contadornoRepita++;
-            } else {
-                System.out.println("Reinicio Las repeticines+++++++++++++++++++++++++++++++++++++++++");
+            temporalUbicaciones.add(ubicacion);
+            cargarNorepite();
+
+            if (temporalUbicaciones.size() == 4) {
+                System.out.println("Reinicio Las repeticines ++++++++++++++ +++++++++++++++++++");
                 contadornoRepita = 0;
                 temporalUbicaciones.clear();
             }
+            System.out.println("Graficos.UsuarioVisual.noRepita() Contador =" + contadornoRepita);
+            contadornoRepita++;
+
         } else {
             DeleteNoRepita();
+        }
+    }
+
+    void cargarNorepite() {
+        for (int i = 0; i < temporalUbicaciones.size(); i++) {
+            int prueba = 0;
+            try {
+                prueba = (int) matrizDeJuego.get(temporalUbicaciones.get(i).x).get(temporalUbicaciones.get(i).y);
+            } catch (Exception e) {
+                prueba = 0;
+            }
+
+            if (prueba != 1 && prueba != 2) {
+                matrizDeJuego = minimax.actualizarMatriz(matrizDeJuego, temporalUbicaciones.get(i), -9);
+                funciones.imprimir(matrizDeJuego);
+            }
         }
     }
 
@@ -131,12 +143,13 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
         matrizDeJuego = nuevaJugada.estado;
 
         if (colorCaballo.equals("Blanco")) {
-            
+
             System.out.println("Matriz antes de la decicion Minimas");
+            cargarNorepite();
             funciones.imprimir(matrizDeJuego);
             matrizDeJuego = minimax.actualizarMatriz(matrizDeJuego, casillaActual, 0);
             noRepita(casillaActual);
-            
+            // DeleteNoRepita();
 
         }
         jLabelPuntosMaquina.setText(Integer.toString(puntosBlanco));
@@ -145,10 +158,29 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
         creacionBotones(matrix);
     }
 
+    private void bugDobleCaballo() {
+        /*Corriege el error de la aparicion de un segundo caballo negro*/
+        if (caballoSegundo.x != -1 || caballoSegundo.y != -1) {
+            /*Mauro Castillo Si aun no se a dectectado una escucha del usuario no haga nada*/
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    if (matrix[i][j].contenido == 2 && i != caballoSegundo.x && j != caballoSegundo.y) {
+                        System.out.println("Graficos.UsuarioVisual.bugDobleCaballo() Encontro y corrigio el bug I =" + i + " J = " + j + " Cordenada (" + caballoSegundo.x + "," + caballoSegundo.y + ")");
+                        matrix[i][j].contenido = 0;
+                    }
+                }
+
+            }
+            matrizDeJuego = funciones.conversorToArraylist(matrix);
+        }
+    }
+
     private void jugada() {
+
         int contadorDeJugadas = 0;
 
         while (contadorDeJugadas < 2) {
+            bugDobleCaballo();
             if ((contadorDeJugadas % 2) == 0) //Si el contador de jugadas es par, es el turno del caballo blanco
             {
                 if (termino) {
@@ -161,9 +193,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
                 }
 
                 turnoHumano = false;
-
                 Bloque nodoRaiz = new Bloque();
-
                 nodoRaiz.setEstado(matrizDeJuego);
                 nodoRaiz.setTipo("MAX");
                 nodoRaiz.setUtilidad(0);
@@ -180,7 +210,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
                     if (puntosBlanco < puntosNegro) {
                         JOptionPane.showMessageDialog(this, "Ganador", "Termino El juego", 1, IcoRecurso.ICON_WiNNER);
                     } else {
-                       JOptionPane.showMessageDialog(this, "Perdiste", "Termino el Juego", 0, IcoRecurso.ICON_LIKE);
+                        JOptionPane.showMessageDialog(this, "Perdiste", "Termino el Juego", 0, IcoRecurso.ICON_LIKE);
                     }
 
                     break;
@@ -225,7 +255,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
     /*Funcion diseñada para llenar el JPmapa de Botones*/
     //Como se usan los arreglos de bloques si el programa suelta array de array con enteros?
     public void creacionBotones(Bloque[][] matrix) {
-        
+
         jPmapa.removeAll();
         jPmapa.setLayout(new GridLayout(8, 8));
 
@@ -508,6 +538,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
         Y = Y / 41;
         // System.out.println(" -+-+- Coordenadas  inicio: " + procesado + " X = " + X + " Y = " + Y);
         Coordenadas salida = new Coordenadas(X, Y);
+        caballoSegundo = salida;
         return salida;
     }
 
@@ -565,11 +596,13 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
                 JOptionPane.showMessageDialog(null, "Lo siento, pero no puede moverse a esta casilla", "Error", 0, IcoRecurso.ICON_ERROR);
             }
         } else // Si no es el turno del jugador
-         if (termino) {
+        {
+            if (termino) {
                 JOptionPane.showMessageDialog(null, "El juego ya terminó", "Error", 0, IcoRecurso.ICON_ERROR);
             } else {
                 JOptionPane.showMessageDialog(null, "El juego aún no ha empezado", "Error", 0, IcoRecurso.ICON_ERROR);
             }
+        }
 
     }
 
