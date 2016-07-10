@@ -6,7 +6,6 @@
 package Logica;
 
 import java.util.ArrayList;
-import javafx.scene.effect.Blend;
 
 /**
  *
@@ -97,19 +96,24 @@ public class Funcionalidades {
         return salida;
 
     }
-    public Bloque[][] conversorToBloque( ArrayList<ArrayList>tableroEnteros) {
+
+    public Bloque[][] conversorToBloque(ArrayList<ArrayList> tableroEnteros) {
         Bloque[][] salida = new Bloque[8][8];
-       
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                System.out.println("++++++++++++++++++++ "+ tableroEnteros.get(i).get(j) );
                 Bloque nodo = new Bloque();
-                nodo.setContenido((int) tableroEnteros.get(i).get(j));
-                salida[i][j] = nodo ;
+                try {
+                    nodo.setContenido((int) tableroEnteros.get(i).get(j));
+                } catch (Exception ex) {
+                    nodo.setContenido(0);
+                }
+                salida[i][j] = nodo;
             }
         }
         return salida;
     }
+
     public void imprimir(ArrayList<ArrayList> salida) {
         System.out.println("Pintando Matriz");
         for (int i = 0; i < salida.size(); i++) {

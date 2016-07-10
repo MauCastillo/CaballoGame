@@ -39,6 +39,8 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
     boolean termino = false;
     ArrayList<ArrayList> matrizDeJuego = new ArrayList<>();
     Amplitud minimax;
+    ArrayList<Coordenadas> temporalUbicaciones = new ArrayList<>(); //Almacena las ubicaciones tempores que posterior mente se eliminaran para que la maquina no las tome como posibilidades
+    int contadornoRepita = 0;
 
     public UsuarioVisual() {
         initComponents();
@@ -56,7 +58,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
     //Método que verifica si el juego termino
 
     private void terminoJuego() {
-        if ((puntosBlanco + puntosNegro) >= 35) {
+        if (puntosBlanco >= 17 || puntosNegro >= 18) {
             termino = true;
         }
     }
@@ -77,13 +79,49 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
         creacionBotones(matrix);
     }
 
+    private void DeleteNoRepita() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Bloque nodo = new Bloque();
+                nodo = matrix[i][j];
+                if (nodo.getContenido() == -9) {
+                    matrix[i][j].setContenido(0);
+                }
+
+            }
+
+        }
+        matrizDeJuego = funciones.conversorToArraylist(matrix);
+
+    }
+
+    private void noRepita(Coordenadas ubicacion) {
+        //Esta funcion inavilita por dos turnos las casillas corridas por el caballo blanco la maquina
+        if (!turnoHumano) {
+            if (contadornoRepita < 4) {
+                temporalUbicaciones.add(ubicacion);
+                for (int i = 0; i < temporalUbicaciones.size(); i++) {
+                    int prueba = (int) matrizDeJuego.get(temporalUbicaciones.get(i).x).get(temporalUbicaciones.get(i).y);
+                    if (prueba == 0) {
+                        matrizDeJuego = minimax.actualizarMatriz(matrizDeJuego, temporalUbicaciones.get(i), -9);
+                        funciones.imprimir(matrizDeJuego);
+                    }
+
+                }
+                System.out.println("Graficos.UsuarioVisual.noRepita() Contador ="+contadornoRepita);
+                contadornoRepita++;
+            } else {
+                System.out.println("Reinicio Las repeticines+++++++++++++++++++++++++++++++++++++++++");
+                contadornoRepita = 0;
+                temporalUbicaciones.clear();
+            }
+        } else {
+            DeleteNoRepita();
+        }
+    }
+
     //Método que mueve un caballo en la dirección dada
     public void moverEnL(String colorCaballo, Bloque nuevaJugada) {
-        int codigoCaballo = 1; //Si es Caballo Blanco
-        if (colorCaballo.equals("Negro")) {
-            codigoCaballo = 2;
-        }
-
         Coordenadas casillaActual = minimax.encontrarUbicacionCaballo(matrizDeJuego, colorCaballo);
 
         //colorearCasilla(casillaActual, 0);
@@ -93,15 +131,16 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
         matrizDeJuego = nuevaJugada.estado;
 
         if (colorCaballo.equals("Blanco")) {
+            
+            System.out.println("Matriz antes de la decicion Minimas");
+            funciones.imprimir(matrizDeJuego);
             matrizDeJuego = minimax.actualizarMatriz(matrizDeJuego, casillaActual, 0);
-        }
+            noRepita(casillaActual);
+            
 
+        }
         jLabelPuntosMaquina.setText(Integer.toString(puntosBlanco));
         jLabelPuntosHumano.setText(Integer.toString(puntosNegro));
-
-        System.out.println("Movi caballo " + colorCaballo + " en la dirección " + nuevaJugada.movimiento);
-
-        // System.out.println(" MATRIZ NUMERICA "+matrizDeJuego.get(4).get(3));
         matrix = funciones.conversorToBloque((ArrayList<ArrayList>) matrizDeJuego.clone());
         creacionBotones(matrix);
     }
@@ -114,9 +153,9 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
             {
                 if (termino) {
                     if (puntosBlanco < puntosNegro) {
-                        JOptionPane.showMessageDialog(this, "Ganador", "Termino El juego", 1,IcoRecurso.ICON_WiNNER);
+                        JOptionPane.showMessageDialog(this, "Ganador", "Termino El juego", 1, IcoRecurso.ICON_WiNNER);
                     } else {
-                        JOptionPane.showMessageDialog(this, "Perdiste", "Termino el Juego", 0,IcoRecurso.ICON_LIKE);
+                        JOptionPane.showMessageDialog(this, "Perdiste", "Termino el Juego", 0, IcoRecurso.ICON_LIKE);
                     }
                     break;
                 }
@@ -132,14 +171,6 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
 
                 Bloque unNodo = minimax.calcularDecisionMinimax(nodoRaiz);
 
-                System.out.println("Movimiento: " + unNodo.movimiento);
-                System.out.println("Ganancia Movimiento: " + unNodo.puntosMovimiento);
-                System.out.println("puntos maquina: " + unNodo.getPuntosCaballoBlanco());
-                System.out.println("puntos jugador: " + unNodo.getPuntosCaballoNegro());
-                System.out.println("Utilidad: " + unNodo.utilidad);
-                System.out.println("Ubicación: " + unNodo.ubicacion);
-                System.out.println("********************");
-
                 moverEnL("Blanco", unNodo);
             } else //Si el contador de jugadas es impar, es el turno del caballo dorado
             {
@@ -147,9 +178,9 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
                     System.out.println("Termine desde JugarPartida - Else");
 
                     if (puntosBlanco < puntosNegro) {
-                        JOptionPane.showConfirmDialog(this, "Ganador", "Termino El juego", 1);
+                        JOptionPane.showMessageDialog(this, "Ganador", "Termino El juego", 1, IcoRecurso.ICON_WiNNER);
                     } else {
-                        JOptionPane.showConfirmDialog(this, "Perdiste", "Termino el Juego", 0);
+                       JOptionPane.showMessageDialog(this, "Perdiste", "Termino el Juego", 0, IcoRecurso.ICON_LIKE);
                     }
 
                     break;
@@ -194,11 +225,8 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
     /*Funcion diseñada para llenar el JPmapa de Botones*/
     //Como se usan los arreglos de bloques si el programa suelta array de array con enteros?
     public void creacionBotones(Bloque[][] matrix) {
-
-        //this.setSize(450, 492);
+        
         jPmapa.removeAll();
-        int filas = 8;
-        int columnas = 8;
         jPmapa.setLayout(new GridLayout(8, 8));
 
         //*AQUI CREO LOS BOTONES CON TAMAÑO 8 -- A que se refieren con tamaño 8?
@@ -237,25 +265,6 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
                 System.out.print(" " + matrix[j][i].getContenido() + " |");
             }
             System.out.println("-");
-        }
-
-    }
-
-    private void MostrarCamino(ArrayList<Bloque> entrada) {
-        /*Esta funcion Pinta el camino probeniente de los algoritmos de busqueda*/
-        Bloque[][] mapa = new Bloque[8][8];
-        mapa = matrix.clone();
-        for (int i = 0; i < entrada.size(); i++) {
-            try {
-                mapa[entrada.get(i).getUbicacion().x][entrada.get(i).getUbicacion().y].setContenido(2);
-                creacionBotones(mapa);
-                Thread.sleep(800);
-                printmatrix(mapa);
-                creacionBotones(mapa);
-                mapa[entrada.get(i).getUbicacion().x][entrada.get(i).getUbicacion().y].setContenido(-1);
-            } catch (InterruptedException ex) {
-                JOptionPane.showMessageDialog(this, "Error en Tiempo de espera del Hilo de Ejecucion");
-            }
         }
 
     }
@@ -497,7 +506,7 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
         int Y = Integer.parseInt(parametroY);
         X = X / 64;
         Y = Y / 41;
-        System.out.println(" -+-+- Coordenadas  inicio: " + procesado + " X = " + X + " Y = " + Y);
+        // System.out.println(" -+-+- Coordenadas  inicio: " + procesado + " X = " + X + " Y = " + Y);
         Coordenadas salida = new Coordenadas(X, Y);
         return salida;
     }
@@ -512,7 +521,6 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        System.out.println("Graficos.UsuarioVisual.actionPerformed()" + ae.getSource());
         Coordenadas ubicacion = convertidorACoordenadas(ae.getSource().toString());
 
         if (turnoHumano) {
@@ -554,13 +562,13 @@ public final class UsuarioVisual extends javax.swing.JFrame implements ActionLis
 
             } else //Si el usuario selecciona una casilla a la cual no se pueda mover
             {
-                JOptionPane.showMessageDialog(null, "Lo siento, pero no puede moverse a esta casilla", "Error", 0,IcoRecurso.ICON_ERROR);
+                JOptionPane.showMessageDialog(null, "Lo siento, pero no puede moverse a esta casilla", "Error", 0, IcoRecurso.ICON_ERROR);
             }
         } else // Si no es el turno del jugador
          if (termino) {
-                JOptionPane.showMessageDialog(null, "El juego ya terminó", "Error", 0,IcoRecurso.ICON_ERROR);
+                JOptionPane.showMessageDialog(null, "El juego ya terminó", "Error", 0, IcoRecurso.ICON_ERROR);
             } else {
-                JOptionPane.showMessageDialog(null, "El juego aún no ha empezado", "Error", 0,IcoRecurso.ICON_ERROR);
+                JOptionPane.showMessageDialog(null, "El juego aún no ha empezado", "Error", 0, IcoRecurso.ICON_ERROR);
             }
 
     }

@@ -337,7 +337,7 @@ public Amplitud(String nivel)
             
             
             //Si no hay ningún caballo en la nueva casilla
-            if(valorCasilla != 1 && valorCasilla !=2)
+            if(valorCasilla != 1 && valorCasilla !=2 && valorCasilla != -9)
             {
                 ArrayList<ArrayList> nuevoEstado = actualizarMatriz(estado, nuevaUbicacion, codigoCaballo);
                 
