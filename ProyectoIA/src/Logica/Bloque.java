@@ -78,7 +78,7 @@ public class Bloque {
         this.puntosCaballoBlanco = puntosCaballoBlanco;
     }
 
-    public void setPuntosCaballoDorado(int puntosCaballoNegro) {
+    public void setPuntosCaballoNegro(int puntosCaballoNegro) {
         this.puntosCaballoNegro = puntosCaballoNegro;
     }
 

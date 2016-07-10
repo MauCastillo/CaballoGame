@@ -6,6 +6,7 @@
 package Logica;
 
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -92,7 +93,6 @@ public class Funcionalidades {
             }
             salida.add(columna);
         }
-        imprimir(salida);
         return salida;
 
     }
@@ -103,11 +103,13 @@ public class Funcionalidades {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Bloque nodo = new Bloque();
-                try {
+                //try {
                     nodo.setContenido((int) tableroEnteros.get(i).get(j));
-                } catch (Exception ex) {
-                    nodo.setContenido(0);
-                }
+                //} catch (Exception ex) {
+                    
+                    //JOptionPane.showMessageDialog(null, "Error Covertir tu bloque");
+                    //nodo.setContenido(0);
+              //  }
                 salida[i][j] = nodo;
             }
         }

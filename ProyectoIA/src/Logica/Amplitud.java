@@ -36,10 +36,10 @@ public Amplitud(String nivel)
                 profundidadLimite = 4;
                 break;
             case "Experto":
-                profundidadLimite = 6;
+                profundidadLimite = 4;
                 break;
+                
         }
-        
         listadoMovimientos = new ArrayList<>();
         
         listadoMovimientos.add("Arriba Izquierda");
@@ -93,7 +93,7 @@ public Amplitud(String nivel)
                     nodo.setProfundidad(profundidad + 1); //La profundidad del nodo padre + 1
                     nodo.setPadre(padre);
                     nodo.setPuntosCaballoBlanco(listaArbolMinimax.get(nodo.padre).getPuntosCaballoBlanco() + nodo.getPuntosCaballoBlanco());
-                    nodo.setPuntosCaballoDorado(listaArbolMinimax.get(nodo.padre).getPuntosCaballoNegro() + nodo.getPuntosCaballoNegro());
+                    nodo.setPuntosCaballoNegro(listaArbolMinimax.get(nodo.padre).getPuntosCaballoNegro() + nodo.getPuntosCaballoNegro());
 
                     //Si profundidad es par, significa que el padre es un nodo MAX, por lo que su hijo es MIN
                     if ((profundidad % 2) == 0) 
@@ -121,7 +121,7 @@ public Amplitud(String nivel)
     
     
     
-    //Método que Sube las utilidades a los nodos padre para encontrar la solución del algoritmo Minimax
+    //Método que Sube las utilidades a los nodos padre para enconr la solución del algoritmo Minimax
     public Bloque calcularDecisionMinimax(Bloque nodoRaiz)
     {
         arbolMinimax = minimax(nodoRaiz);
@@ -354,7 +354,7 @@ public Amplitud(String nivel)
                 
                 // esto es para darle los punto a cada jugador en su movimiento (lo puso Diego)
                 if(colorCaballo.equals("Negro"))
-                    nuevoBloque.setPuntosCaballoDorado(puntosMovimiento);
+                    nuevoBloque.setPuntosCaballoNegro(puntosMovimiento);
                 else
                     nuevoBloque.setPuntosCaballoBlanco(puntosMovimiento);
                     

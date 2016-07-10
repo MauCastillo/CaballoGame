@@ -6,6 +6,8 @@
 package projectia;
 
 import Graficos.UsuarioVisual;
+import Logica.Bloque;
+import Logica.Coordenadas;
 
 
 /**
@@ -36,13 +38,6 @@ public class ProjectIA {
         //
         Bloque unNodo = new Bloque();
         unNodo= amplitud.calcularDecisionMinimax(raiz);
-        
-        
-        
-        
-        
-        
-        
         System.out.println("Movimiento: " + unNodo.movimiento);
         System.out.println("Ganancia Movimiento: " + unNodo.puntosMovimiento);
         System.out.println("puntos maquina: " + unNodo.getPuntosCaballoBlanco());
